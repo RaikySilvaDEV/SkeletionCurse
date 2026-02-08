@@ -148,7 +148,7 @@ const DATA = {
         'Sim. Voce pode pedir reembolso total em ate 7 dias.',
     },
   ],
-  countdownEnd: '2026-02-01T23:59:59-03:00',
+  countdownEnd: '2026-02-20T23:59:59-03:00',
   pricing: {
     price: 'R$ 997',
     installment: 'ou 12x de R$ 97,50',
