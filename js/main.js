@@ -49,6 +49,16 @@ const triggerInteractions = () => {
   }
 };
 
+const triggerCarousels = () => {
+  if (typeof window.startCarousels === 'function') {
+    window.startCarousels();
+    return;
+  }
+  if (typeof window.applyCarousels === 'function') {
+    window.applyCarousels();
+  }
+};
+
 const init = () => {
   buildSections();
   renderHero(DATA);
@@ -63,6 +73,7 @@ const init = () => {
   setFooterYear();
   triggerFadeUp();
   triggerInteractions();
+  triggerCarousels();
 };
 
 if (document.readyState === 'loading') {

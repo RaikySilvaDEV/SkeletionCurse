@@ -170,7 +170,7 @@ const renderSocialProof = (data) => {
   );
   const list = createEl(
     'div',
-    'mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6'
+    'mt-6 carousel carousel-logos'
   );
   list.id = 'logos-list';
 
@@ -302,7 +302,7 @@ const renderTestimonials = (data) => {
     'Resultados reais',
     'Depoimentos de quem aplicou o metodo e vendeu mais.'
   );
-  const list = createEl('div', 'mt-8 grid gap-4 md:grid-cols-3');
+  const list = createEl('div', 'mt-8 carousel carousel-testimonials');
   list.id = 'testimonials-list';
 
   container.append(header, list);
@@ -462,7 +462,7 @@ const renderPricing = (data) => {
     'mt-2 text-sm text-zinc-300',
     'Opcoes simples para diferentes momentos.'
   );
-  const plansList = createEl('div', 'mt-5 grid gap-4 md:grid-cols-3');
+  const plansList = createEl('div', 'mt-5 carousel carousel-plans');
   plansList.id = 'plans-list';
 
   container.append(header, plansTitle, plansHint, plansList);
