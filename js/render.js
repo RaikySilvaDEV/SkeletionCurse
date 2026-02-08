@@ -168,13 +168,12 @@ const renderSocialProof = (data) => {
     'Times que confiam',
     'Marcas e equipes que ja aplicam o metodo no dia a dia.'
   );
-  const list = createEl(
-    'div',
-    'mt-6 carousel carousel-logos'
-  );
+  const carousel = createEl('div', 'mt-6 carousel carousel-logos');
+  const list = createEl('div', 'carousel-track');
   list.id = 'logos-list';
 
-  container.append(header, list);
+  carousel.append(list);
+  container.append(header, carousel);
   section.append(container);
 
   renderList('logos-list', data.logos, (logo) => {
@@ -302,10 +301,12 @@ const renderTestimonials = (data) => {
     'Resultados reais',
     'Depoimentos de quem aplicou o metodo e vendeu mais.'
   );
-  const list = createEl('div', 'mt-8 carousel carousel-testimonials');
+  const carousel = createEl('div', 'mt-8 carousel carousel-testimonials');
+  const list = createEl('div', 'carousel-track');
   list.id = 'testimonials-list';
 
-  container.append(header, list);
+  carousel.append(list);
+  container.append(header, carousel);
   section.append(container);
 
   renderList('testimonials-list', data.testimonials, (item) => {
@@ -462,10 +463,12 @@ const renderPricing = (data) => {
     'mt-2 text-sm text-zinc-300',
     'Opcoes simples para diferentes momentos.'
   );
-  const plansList = createEl('div', 'mt-5 carousel carousel-plans');
+  const plansCarousel = createEl('div', 'mt-5 carousel carousel-plans');
+  const plansList = createEl('div', 'carousel-track');
   plansList.id = 'plans-list';
 
-  container.append(header, plansTitle, plansHint, plansList);
+  plansCarousel.append(plansList);
+  container.append(header, plansTitle, plansHint, plansCarousel);
   section.append(container);
 
   renderList(plansList, data.pricing.plans || [], (plan) => {

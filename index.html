@@ -42,47 +42,31 @@
       }
 
       .carousel {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .carousel-track {
         display: flex;
         gap: 16px;
-        overflow-x: auto;
-        scroll-snap-type: x proximity;
+        width: max-content;
         padding-bottom: 8px;
-        cursor: grab;
-        -webkit-overflow-scrolling: touch;
+        will-change: transform;
       }
 
-      .carousel > * {
+      .carousel-track > * {
         flex: 0 0 auto;
-        scroll-snap-align: start;
       }
 
-      .carousel.is-dragging {
-        cursor: grabbing;
-      }
-
-      .carousel::-webkit-scrollbar {
-        height: 6px;
-      }
-
-      .carousel::-webkit-scrollbar-thumb {
-        background: rgba(63, 63, 70, 0.7);
-        border-radius: 999px;
-      }
-
-      .carousel::-webkit-scrollbar-track {
-        background: rgba(39, 39, 42, 0.4);
-        border-radius: 999px;
-      }
-
-      .carousel-logos > * {
+      .carousel-logos .carousel-track > * {
         width: clamp(120px, 18vw, 170px);
       }
 
-      .carousel-testimonials > * {
+      .carousel-testimonials .carousel-track > * {
         width: clamp(240px, 75vw, 340px);
       }
 
-      .carousel-plans > * {
+      .carousel-plans .carousel-track > * {
         width: clamp(240px, 80vw, 320px);
       }
 
@@ -394,21 +378,26 @@
       };
 
       const setupAutoScroll = (container, speed) => {
-        if (container.dataset.carouselInit === 'true') {
+        const track = container.querySelector('.carousel-track');
+        if (!track) {
           return;
         }
-        container.dataset.carouselInit = 'true';
+        if (track.dataset.carouselInit === 'true') {
+          return;
+        }
+        track.dataset.carouselInit = 'true';
 
-        const items = Array.from(container.children);
+        const items = Array.from(track.children);
         if (items.length < 2) {
           return;
         }
         items.forEach((item) => {
-          container.append(item.cloneNode(true));
+          track.append(item.cloneNode(true));
         });
 
         let lastTime = null;
         let paused = false;
+        let offset = 0;
 
         const pause = () => {
           paused = true;
@@ -440,11 +429,12 @@
           }
           const delta = time - lastTime;
           lastTime = time;
-          container.scrollLeft += (speed * delta) / 16;
-          const resetAt = container.scrollWidth / 2;
-          if (container.scrollLeft >= resetAt) {
-            container.scrollLeft -= resetAt;
+          offset -= (speed * delta) / 16;
+          const resetAt = track.scrollWidth / 2;
+          if (Math.abs(offset) >= resetAt) {
+            offset += resetAt;
           }
+          track.style.transform = `translateX(${offset}px)`;
           requestAnimationFrame(step);
         };
 
@@ -469,21 +459,6 @@
           setupAutoScroll(plans, 0.18);
         }
 
-        document.querySelectorAll('.carousel').forEach((carousel) => {
-          if (carousel.dataset.dragInit === 'true') {
-            return;
-          }
-          carousel.dataset.dragInit = 'true';
-          carousel.addEventListener('pointerdown', () => {
-            carousel.classList.add('is-dragging');
-          });
-          carousel.addEventListener('pointerup', () => {
-            carousel.classList.remove('is-dragging');
-          });
-          carousel.addEventListener('pointerleave', () => {
-            carousel.classList.remove('is-dragging');
-          });
-        });
       };
 
       const startFadeUp = () => {
