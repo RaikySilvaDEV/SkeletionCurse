@@ -448,79 +448,88 @@
         }
         track.dataset.carouselInit = 'true';
 
-        const items = Array.from(track.children);
-        if (items.length < 2) {
-          return;
-        }
-        const gapValue = parseFloat(getComputedStyle(track).gap || '0');
-        const baseWidth = items.reduce((total, item) => {
-          const rect = item.getBoundingClientRect();
-          return total + rect.width + gapValue;
-        }, 0);
-
-        const minWidth = Math.max(container.offsetWidth * 2, baseWidth * 2);
-        let guard = 0;
-        while (track.scrollWidth < minWidth && guard < 8) {
-          items.forEach((item) => {
-            track.append(item.cloneNode(true));
-          });
-          guard += 1;
-        }
-
-        let lastTime = null;
-        let paused = false;
-        let offset = 0;
-
-        const pause = () => {
-          paused = true;
-        };
-        const resume = () => {
-          paused = false;
-        };
-
-        container.addEventListener('mouseenter', pause);
-        container.addEventListener('mouseleave', resume);
-        container.addEventListener('focusin', pause);
-        container.addEventListener('focusout', resume);
-        container.addEventListener('touchstart', pause, { passive: true });
-        container.addEventListener('touchend', resume, { passive: true });
-        container.addEventListener('pointerdown', pause);
-        container.addEventListener('pointerup', resume);
-
-        const step = (time) => {
-          if (!container.isConnected) {
+        const init = (attempt = 0) => {
+          const items = Array.from(track.children);
+          if (items.length < 2) {
             return;
           }
-          if (paused) {
+          const computed = getComputedStyle(track);
+          const gapValue = parseFloat(
+            computed.columnGap || computed.gap || '0'
+          );
+          const baseWidth = items.reduce((total, item) => {
+            const rect = item.getBoundingClientRect();
+            const width = rect.width || item.offsetWidth || 0;
+            return total + width + (Number.isNaN(gapValue) ? 0 : gapValue);
+          }, 0);
+
+          if (baseWidth <= 0 && attempt < 6) {
+            requestAnimationFrame(() => init(attempt + 1));
+            return;
+          }
+
+          const minWidth = Math.max(container.offsetWidth * 2, baseWidth * 2);
+          let guard = 0;
+          while (track.scrollWidth < minWidth && guard < 8) {
+            items.forEach((item) => {
+              track.append(item.cloneNode(true));
+            });
+            guard += 1;
+          }
+
+          let lastTime = null;
+          let paused = false;
+          let offset = 0;
+
+          const pause = () => {
+            paused = true;
+          };
+          const resume = () => {
+            paused = false;
+          };
+
+          container.addEventListener('mouseenter', pause);
+          container.addEventListener('mouseleave', resume);
+          container.addEventListener('focusin', pause);
+          container.addEventListener('focusout', resume);
+          container.addEventListener('touchstart', pause, { passive: true });
+          container.addEventListener('touchend', resume, { passive: true });
+          container.addEventListener('pointerdown', pause);
+          container.addEventListener('pointerup', resume);
+
+          const step = (time) => {
+            if (!container.isConnected) {
+              return;
+            }
+            if (paused) {
+              lastTime = time;
+              requestAnimationFrame(step);
+              return;
+            }
+            if (lastTime === null) {
+              lastTime = time;
+            }
+            const delta = time - lastTime;
             lastTime = time;
+            offset -= (speed * delta) / 16;
+            const resetAt = baseWidth || track.scrollWidth / 2;
+            if (Math.abs(offset) >= resetAt) {
+              offset += resetAt;
+            }
+            track.style.transform = `translateX(${offset}px)`;
             requestAnimationFrame(step);
-            return;
-          }
-          if (lastTime === null) {
-            lastTime = time;
-          }
-          const delta = time - lastTime;
-          lastTime = time;
-          offset -= (speed * delta) / 16;
-          const resetAt = baseWidth || track.scrollWidth / 2;
-          if (Math.abs(offset) >= resetAt) {
-            offset += resetAt;
-          }
-          track.style.transform = `translateX(${offset}px)`;
+          };
+
           requestAnimationFrame(step);
         };
 
-        requestAnimationFrame(step);
+        requestAnimationFrame(() => init(0));
       };
 
       const applyCarousels = () => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          return;
-        }
-
         const logos = document.querySelector('.carousel-logos');
         if (logos) {
-          setupAutoScroll(logos, 0.35);
+          setupAutoScroll(logos, 0.45);
         }
       };
 
