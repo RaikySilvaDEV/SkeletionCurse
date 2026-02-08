@@ -638,13 +638,42 @@
         rail.addEventListener('touchstart', stop, { passive: true });
         rail.addEventListener('touchend', start, { passive: true });
 
-        start();
+        const init = (attempt = 0) => {
+          const items = Array.from(track.children);
+          if (!items.length) {
+            return;
+          }
+          const computed = getComputedStyle(track);
+          const gapValue = parseFloat(
+            computed.columnGap || computed.gap || '0'
+          );
+          const baseWidth = items.reduce((total, item) => {
+            const rect = item.getBoundingClientRect();
+            const width = rect.width || item.offsetWidth || 0;
+            return total + width + (Number.isNaN(gapValue) ? 0 : gapValue);
+          }, 0);
+
+          if (baseWidth <= 0 && attempt < 6) {
+            requestAnimationFrame(() => init(attempt + 1));
+            return;
+          }
+
+          const minWidth = Math.max(track.clientWidth * 2, baseWidth * 2);
+          let guard = 0;
+          while (track.scrollWidth < minWidth && guard < 8) {
+            items.forEach((item) => {
+              track.append(item.cloneNode(true));
+            });
+            guard += 1;
+          }
+
+          start();
+        };
+
+        requestAnimationFrame(() => init(0));
       };
 
       const applyCardRails = () => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          return;
-        }
         document.querySelectorAll('.card-rail').forEach((rail) => {
           setupCardRail(rail);
         });
