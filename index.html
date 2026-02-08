@@ -564,10 +564,79 @@
         });
       };
 
+      const setupAutoSlide = (rail, delayMs) => {
+        if (rail.dataset.autoSlideInit === 'true') {
+          return;
+        }
+        rail.dataset.autoSlideInit = 'true';
+
+        const track = rail.querySelector('.card-track');
+        if (!track) {
+          return;
+        }
+
+        const getStep = () => {
+          const first = track.querySelector(':scope > *');
+          if (!first) {
+            return 0;
+          }
+          const gapValue = parseFloat(getComputedStyle(track).gap || '0');
+          return first.getBoundingClientRect().width + gapValue;
+        };
+
+        let timerId = null;
+        const start = () => {
+          if (timerId) {
+            return;
+          }
+          timerId = setInterval(() => {
+            const step = getStep();
+            if (!step) {
+              return;
+            }
+            const maxScroll = track.scrollWidth - track.clientWidth;
+            if (track.scrollLeft >= maxScroll - 2) {
+              track.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+              track.scrollBy({ left: step, behavior: 'smooth' });
+            }
+          }, delayMs);
+        };
+
+        const stop = () => {
+          if (!timerId) {
+            return;
+          }
+          clearInterval(timerId);
+          timerId = null;
+        };
+
+        rail.addEventListener('mouseenter', stop);
+        rail.addEventListener('mouseleave', start);
+        rail.addEventListener('focusin', stop);
+        rail.addEventListener('focusout', start);
+        rail.addEventListener('touchstart', stop, { passive: true });
+        rail.addEventListener('touchend', start, { passive: true });
+
+        start();
+      };
+
       const applyCardRails = () => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          return;
+        }
         document.querySelectorAll('.card-rail').forEach((rail) => {
           setupCardRail(rail);
         });
+
+        const testimonials = document.querySelector('.card-rail-testimonials');
+        if (testimonials) {
+          setupAutoSlide(testimonials, 3800);
+        }
+        const plans = document.querySelector('.card-rail-plans');
+        if (plans) {
+          setupAutoSlide(plans, 4200);
+        }
       };
 
       const startFadeUp = () => {
