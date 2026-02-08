@@ -62,12 +62,73 @@
         width: clamp(120px, 18vw, 170px);
       }
 
-      .carousel-testimonials .carousel-track > * {
+      .card-rail {
+        position: relative;
+      }
+
+      .card-track {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .card-track::-webkit-scrollbar {
+        display: none;
+      }
+
+      .card-track > * {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+      }
+
+      .card-rail-testimonials .card-track > * {
         width: clamp(240px, 75vw, 340px);
       }
 
-      .carousel-plans .carousel-track > * {
+      .card-rail-plans .card-track > * {
         width: clamp(240px, 80vw, 320px);
+      }
+
+      .card-nav-row {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+        padding: 0 6px;
+      }
+
+      .card-nav {
+        pointer-events: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid rgba(63, 63, 70, 0.6);
+        background: rgba(24, 24, 27, 0.85);
+        color: #f4f4f5;
+        font-size: 20px;
+        transition: transform 0.2s ease, border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .card-nav:hover {
+        transform: translateY(-1px);
+        border-color: rgba(16, 185, 129, 0.45);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      @media (max-width: 640px) {
+        .card-nav-row {
+          display: none;
+        }
       }
 
       .cta-glow {
@@ -391,9 +452,20 @@
         if (items.length < 2) {
           return;
         }
-        items.forEach((item) => {
-          track.append(item.cloneNode(true));
-        });
+        const gapValue = parseFloat(getComputedStyle(track).gap || '0');
+        const baseWidth = items.reduce((total, item) => {
+          const rect = item.getBoundingClientRect();
+          return total + rect.width + gapValue;
+        }, 0);
+
+        const minWidth = Math.max(container.offsetWidth * 2, baseWidth * 2);
+        let guard = 0;
+        while (track.scrollWidth < minWidth && guard < 8) {
+          items.forEach((item) => {
+            track.append(item.cloneNode(true));
+          });
+          guard += 1;
+        }
 
         let lastTime = null;
         let paused = false;
@@ -430,7 +502,7 @@
           const delta = time - lastTime;
           lastTime = time;
           offset -= (speed * delta) / 16;
-          const resetAt = track.scrollWidth / 2;
+          const resetAt = baseWidth || track.scrollWidth / 2;
           if (Math.abs(offset) >= resetAt) {
             offset += resetAt;
           }
@@ -450,15 +522,43 @@
         if (logos) {
           setupAutoScroll(logos, 0.35);
         }
-        const testimonials = document.querySelector('.carousel-testimonials');
-        if (testimonials) {
-          setupAutoScroll(testimonials, 0.22);
+      };
+
+      const setupCardRail = (rail) => {
+        if (rail.dataset.railInit === 'true') {
+          return;
         }
-        const plans = document.querySelector('.carousel-plans');
-        if (plans) {
-          setupAutoScroll(plans, 0.18);
+        rail.dataset.railInit = 'true';
+
+        const track = rail.querySelector('.card-track');
+        const prev = rail.querySelector('[data-nav="prev"]');
+        const next = rail.querySelector('[data-nav="next"]');
+        if (!track || !prev || !next) {
+          return;
         }
 
+        const getStep = () => {
+          const first = track.querySelector(':scope > *');
+          if (!first) {
+            return 0;
+          }
+          const gapValue = parseFloat(getComputedStyle(track).gap || '0');
+          return first.getBoundingClientRect().width + gapValue;
+        };
+
+        prev.addEventListener('click', () => {
+          track.scrollBy({ left: -getStep(), behavior: 'smooth' });
+        });
+
+        next.addEventListener('click', () => {
+          track.scrollBy({ left: getStep(), behavior: 'smooth' });
+        });
+      };
+
+      const applyCardRails = () => {
+        document.querySelectorAll('.card-rail').forEach((rail) => {
+          setupCardRail(rail);
+        });
       };
 
       const startFadeUp = () => {
@@ -470,6 +570,12 @@
       const startCarousels = () => {
         requestAnimationFrame(() => {
           requestAnimationFrame(applyCarousels);
+        });
+      };
+
+      const startCardRails = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(applyCardRails);
         });
       };
 
@@ -485,17 +591,21 @@
       window.startInteractions = startInteractions;
       window.applyCarousels = applyCarousels;
       window.startCarousels = startCarousels;
+      window.applyCardRails = applyCardRails;
+      window.startCardRails = startCardRails;
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
           startFadeUp();
           startInteractions();
           startCarousels();
+          startCardRails();
         });
       } else {
         startFadeUp();
         startInteractions();
         startCarousels();
+        startCardRails();
       }
     </script>
   </body>

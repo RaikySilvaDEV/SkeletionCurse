@@ -301,12 +301,22 @@ const renderTestimonials = (data) => {
     'Resultados reais',
     'Depoimentos de quem aplicou o metodo e vendeu mais.'
   );
-  const carousel = createEl('div', 'mt-8 carousel carousel-testimonials');
-  const list = createEl('div', 'carousel-track');
+  const rail = createEl('div', 'mt-8 card-rail card-rail-testimonials');
+  const list = createEl('div', 'card-track');
   list.id = 'testimonials-list';
+  const nav = createEl('div', 'card-nav-row');
+  const prev = createEl('button', 'card-nav', '‹');
+  prev.type = 'button';
+  prev.setAttribute('aria-label', 'Voltar depoimentos');
+  prev.dataset.nav = 'prev';
+  const next = createEl('button', 'card-nav', '›');
+  next.type = 'button';
+  next.setAttribute('aria-label', 'Avançar depoimentos');
+  next.dataset.nav = 'next';
+  nav.append(prev, next);
 
-  carousel.append(list);
-  container.append(header, carousel);
+  rail.append(list, nav);
+  container.append(header, rail);
   section.append(container);
 
   renderList('testimonials-list', data.testimonials, (item) => {
@@ -463,12 +473,22 @@ const renderPricing = (data) => {
     'mt-2 text-sm text-zinc-300',
     'Opcoes simples para diferentes momentos.'
   );
-  const plansCarousel = createEl('div', 'mt-5 carousel carousel-plans');
-  const plansList = createEl('div', 'carousel-track');
+  const plansRail = createEl('div', 'mt-5 card-rail card-rail-plans');
+  const plansList = createEl('div', 'card-track');
   plansList.id = 'plans-list';
+  const plansNav = createEl('div', 'card-nav-row');
+  const plansPrev = createEl('button', 'card-nav', '‹');
+  plansPrev.type = 'button';
+  plansPrev.setAttribute('aria-label', 'Voltar planos');
+  plansPrev.dataset.nav = 'prev';
+  const plansNext = createEl('button', 'card-nav', '›');
+  plansNext.type = 'button';
+  plansNext.setAttribute('aria-label', 'Avançar planos');
+  plansNext.dataset.nav = 'next';
+  plansNav.append(plansPrev, plansNext);
 
-  plansCarousel.append(plansList);
-  container.append(header, plansTitle, plansHint, plansCarousel);
+  plansRail.append(plansList, plansNav);
+  container.append(header, plansTitle, plansHint, plansRail);
   section.append(container);
 
   renderList(plansList, data.pricing.plans || [], (plan) => {

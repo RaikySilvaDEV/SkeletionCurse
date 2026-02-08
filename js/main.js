@@ -59,6 +59,16 @@ const triggerCarousels = () => {
   }
 };
 
+const triggerCardRails = () => {
+  if (typeof window.startCardRails === 'function') {
+    window.startCardRails();
+    return;
+  }
+  if (typeof window.applyCardRails === 'function') {
+    window.applyCardRails();
+  }
+};
+
 const init = () => {
   buildSections();
   renderHero(DATA);
@@ -74,6 +84,7 @@ const init = () => {
   triggerFadeUp();
   triggerInteractions();
   triggerCarousels();
+  triggerCardRails();
 };
 
 if (document.readyState === 'loading') {
