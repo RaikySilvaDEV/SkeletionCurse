@@ -39,6 +39,16 @@ const triggerFadeUp = () => {
   }
 };
 
+const triggerInteractions = () => {
+  if (typeof window.startInteractions === 'function') {
+    window.startInteractions();
+    return;
+  }
+  if (typeof window.applyInteractions === 'function') {
+    window.applyInteractions();
+  }
+};
+
 const init = () => {
   buildSections();
   renderHero(DATA);
@@ -52,6 +62,7 @@ const init = () => {
   renderCountdown(DATA.countdownEnd);
   setFooterYear();
   triggerFadeUp();
+  triggerInteractions();
 };
 
 if (document.readyState === 'loading') {
