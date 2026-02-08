@@ -41,20 +41,18 @@
         transform: translate3d(0, 0, 0);
       }
 
-      @media (min-width: 768px) {
-        #hero::after {
-          content: '';
-          position: absolute;
-          left: 50%;
-          bottom: 18px;
-          width: 16px;
-          height: 16px;
-          border-right: 2px solid rgba(228, 228, 231, 0.7);
-          border-bottom: 2px solid rgba(228, 228, 231, 0.7);
-          transform: translateX(-50%) rotate(45deg);
-          animation: scrollHint 2.2s ease-in-out infinite;
-          pointer-events: none;
-        }
+      #hero::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        width: 16px;
+        height: 16px;
+        border-right: 2px solid rgba(228, 228, 231, 0.7);
+        border-bottom: 2px solid rgba(228, 228, 231, 0.7);
+        transform: translateX(-50%) rotate(45deg);
+        animation: scrollHint 2.2s ease-in-out infinite;
+        pointer-events: none;
       }
 
       @keyframes scrollHint {
@@ -129,16 +127,32 @@
         });
 
         const targets = Array.from(uniqueTargets);
+        if (!targets.length) {
+          return;
+        }
+        if (window.__fadeUpApplied) {
+          return;
+        }
+        window.__fadeUpApplied = true;
         targets.forEach((el, index) => {
           el.classList.add('fade-up');
           el.style.setProperty('--fade-delay', `${Math.min(index * 40, 200)}ms`);
         });
 
+        if (!('IntersectionObserver' in window)) {
+          requestAnimationFrame(() => {
+            targets.forEach((el) => el.classList.add('is-visible'));
+          });
+          return;
+        }
+
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
+                requestAnimationFrame(() => {
+                  entry.target.classList.add('is-visible');
+                });
                 observer.unobserve(entry.target);
               }
             });
@@ -146,15 +160,26 @@
           { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
         );
 
-        targets.forEach((el) => observer.observe(el));
+        requestAnimationFrame(() => {
+          targets.forEach((el) => observer.observe(el));
+        });
       };
+
+      const startFadeUp = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(applyFadeUp);
+        });
+      };
+
+      window.applyFadeUp = applyFadeUp;
+      window.startFadeUp = startFadeUp;
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-          requestAnimationFrame(applyFadeUp);
+          startFadeUp();
         });
       } else {
-        requestAnimationFrame(applyFadeUp);
+        startFadeUp();
       }
     </script>
   </body>

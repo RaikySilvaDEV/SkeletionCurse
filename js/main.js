@@ -29,6 +29,16 @@ const setFooterYear = () => {
   }
 };
 
+const triggerFadeUp = () => {
+  if (typeof window.startFadeUp === 'function') {
+    window.startFadeUp();
+    return;
+  }
+  if (typeof window.applyFadeUp === 'function') {
+    window.applyFadeUp();
+  }
+};
+
 const init = () => {
   buildSections();
   renderHero(DATA);
@@ -41,6 +51,7 @@ const init = () => {
   renderFAQ(DATA);
   renderCountdown(DATA.countdownEnd);
   setFooterYear();
+  triggerFadeUp();
 };
 
 if (document.readyState === 'loading') {
